@@ -1,6 +1,6 @@
 flask
 pandas
 plotly
-yfinance
+--upgrade yfinance
 gunicorn
 numpy
