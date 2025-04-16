@@ -8,6 +8,20 @@ import requests
 import time
 import random
 import yfinance as yf
+import yfinance.shared
+import requests
+
+# Patch yfinance to include required headers so Yahoo doesn't block us on Render
+def patched_get(url, params=None, **kwargs):
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    return requests.get(url, params=params, headers=headers, **kwargs)
+
+yfinance.shared._get = patched_get
+
 import os
 
 app = Flask(__name__)
