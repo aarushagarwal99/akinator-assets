@@ -8,18 +8,18 @@ import requests
 import time
 import random
 import yfinance as yf
-import yfinance.utils  # ✅ Correct import
+import yfinance.shared  # 👈 correct for patching low-level fetch
 
-# ✅ Correct patch so Yahoo Finance doesn't block us on Render
 def patched_get(url, params=None, **kwargs):
-    headers = {
-        "User-Agent": "Mozilla/5.0",
+    headers = kwargs.pop("headers", {})
+    headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
+    })
     return requests.get(url, params=params, headers=headers, **kwargs)
 
-yfinance.utils._requests_wrapper = patched_get  # ✅ Correct override
+yfinance.shared._get = patched_get  # 👈 this is the actual function yfinance uses internally
+
 
 import os
 
