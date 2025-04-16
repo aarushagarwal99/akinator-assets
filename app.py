@@ -8,7 +8,6 @@ import requests
 import time
 import random
 import yfinance as yf
-import yfinance.shared
 import requests
 
 # Patch yfinance to include required headers so Yahoo doesn't block us on Render
