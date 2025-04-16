@@ -74,8 +74,9 @@
         <div class="d-flex align-items-stretch mb-4" style="gap: 20px;">
     <!-- Logo Panel -->
     <div class="card-panel d-flex align-items-center justify-content-center" style="width: 160px; flex-shrink: 0;">
-            <h3>Akinator Assets</h3>
+            <img src="{{ url_for('static', filename='akinator_logo.png') }}" alt="Akinator Assets Logo" style="max-height: 90px; max-width: 100%;">
     </div>
+
     <!-- Ticker + Period Selection Panel -->
     <div class="card-panel flex-grow-1">
             <div class="input-group mb-3">
@@ -100,6 +101,8 @@
             </div>
         </div>
     </div>
+
+
         <!-- Stats Container (Price Info & Financials) -->
         <div id="stats-container" style="display:none;">
             <div class="card-panel">
@@ -119,6 +122,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="card-panel">
                 <h5 class="mb-3">Financial Metrics</h5>
                 <table class="table">
@@ -153,6 +157,7 @@
                 </table>
             </div>
         </div>
+
         <!-- Loading & Error -->
         <div id="loading" class="text-center" style="display:none;">
             <div class="spinner-border text-primary" role="status">
@@ -161,6 +166,7 @@
             <p>Fetching stock data...</p>
         </div>
         <div id="error" class="alert alert-danger" style="display:none;"></div>
+
         <!-- Price Target Container (User Projections) -->
         <div id="price-target-container" style="display:none;">
             <div class="card-panel price-target-card">
@@ -176,6 +182,7 @@
                     </tr>
                 </table>
                 <div id="adjustment-note" class="text-muted" style="font-style: italic;"></div>
+
                 <div class="mt-3">
                     <h6>Adjust Projections</h6>
                     <div class="mb-2">
@@ -221,6 +228,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Chart Click Mode (Fib vs. Trendlines) -->
         <div class="card-panel">
             <label class="fib-label">Chart Click Mode:</label>
@@ -233,6 +241,7 @@
                 <label class="form-check-label" for="modeTrendlines">Trendlines</label>
             </div>
         </div>
+
         <!-- Fibonacci Settings -->
         <div class="fib-settings" id="fibSettings">
             <div class="form-check form-switch mb-2">
@@ -246,6 +255,7 @@
             </div>
             <small class="text-muted">Click on the chart to set or enter values manually</small>
         </div>
+
         <!-- Trend Line Settings -->
         <div id="trendLineSettings" class="fib-settings" style="display:none;">
             <label for="trendLineMode" class="fib-label">Trend Lines Mode:</label>
@@ -256,19 +266,23 @@
             </select>
             <small class="text-muted ms-2">Click on the chart to draw lines</small>
         </div>
+
         <!-- Chart Panel -->
         <div class="card-panel" id="graph-panel">
             <div id="graph"></div>
         </div>
     </div>
+
     <script>
         let chartDataX = [];
         let pointForLine = null;
         let trendLineCount = 0;
+
         // Ticker/period listeners
         $('#submit').on('click', fetchStockData);
         $('#ticker').on('keypress', function(e){ if(e.which === 13) fetchStockData(); });
         $('input[name="period"]').on('change', fetchStockData);
+
         // Switching chart click mode toggles which settings panel is shown
         $('input[name="chartClickMode"]').on('change', function() {
             const mode = getChartClickMode();
@@ -280,6 +294,7 @@
                 $('#trendLineSettings').show();
             }
         });
+
         // On page load, set up which panel is shown by default
         $(document).ready(function() {
             // If 'fib' is checked by default, hide Trendline settings
@@ -292,14 +307,17 @@
             }
             fetchStockData();
         });
+
         // Returns "fib" or "trendlines"
         function getChartClickMode() {
             return $('input[name="chartClickMode"]:checked').val();
         }
+
         // Chart Click Handler
         function chartClickHandler(data) {
             const clickMode = getChartClickMode();
             const clickedY = data.points[0].y;
+
             // If user in Fibonacci mode: set fibHighValue from click, then fetch
             if (clickMode === 'fib') {
                 if ($('#manualFibMode').is(':checked')) {
@@ -311,6 +329,7 @@
             else if (clickMode === 'trendlines') {
                 const mode = $('#trendLineMode').val();
                 if (mode === 'off') return;
+
                 let clickedX = data.points[0].x;
                 if (mode === 'horizontal') {
                     // add horizontal line
@@ -318,6 +337,7 @@
                     if (!chartDataX || chartDataX.length < 2) return;
                     const xStart = chartDataX[0];
                     const xEnd   = chartDataX[chartDataX.length - 1];
+
                     const trace = {
                         x: [xStart, xEnd],
                         y: [clickedY, clickedY],
@@ -327,6 +347,7 @@
                         hoverinfo: 'none'
                     };
                     Plotly.addTraces('graph', trace);
+
                 } else if (mode === 'point') {
                     // point-to-point line
                     if (!pointForLine) {
@@ -347,11 +368,13 @@
                 }
             }
         }
+
         // randomColor for drawing lines
         function randomColor() {
             const colors = ['#FF5733', '#33FFCC', '#FF33A6', '#3371FF', '#FFD633', '#4CAF50'];
             return colors[Math.floor(Math.random() * colors.length)];
         }
+
         // Fib toggles: re-fetch on changes
         $('#manualFibMode').on('change', function() {
             // If unchecked, clear fibHigh
@@ -373,10 +396,12 @@
                 fetchStockData();
             }
         });
+
         // Main fetch function
         function fetchStockData() {
             var ticker = $('#ticker').val().trim();
             var period = $('input[name="period"]:checked').val();
+
             if (!ticker) {
                 $('#error').text('Please enter a valid ticker symbol').show();
                 return;
@@ -385,11 +410,13 @@
             $('#error').hide();
             $('#stats-container').hide();
             $('#price-target-container').hide();
+
             // We'll decide "manualFib" = true if in fib mode AND manualFibMode is checked
             const chartMode = getChartClickMode();
             const manualFib = (chartMode === 'fib') && $('#manualFibMode').is(':checked');
             const showExtensions = $('#showExtensions').is(':checked');
             const fibHigh = $('#fibHighValue').val();
+
             $.ajax({
                 url: '/plot',
                 type: 'POST',
@@ -412,16 +439,19 @@
                     Plotly.newPlot('graph', figData.data, figData.layout).then(function() {
                         var graphDiv = document.getElementById('graph');
                         graphDiv.on('plotly_click', chartClickHandler);
+
                         // store x-data in chartDataX for horizontal lines
                         if (figData.data.length > 0) {
                             chartDataX = figData.data[0].x || [];
                         }
                     });
+
                     // Update stats
                     $('#current-price').text(response.price.current);
                     $('#period-change').text(response.price.change);
                     $('#year-high').text(response.price.high);
                     $('#year-low').text(response.price.low);
+
                     $('#revenue-growth').text(response.financials.revenueGrowth);
                     $('#forward-pe').text(response.financials.forwardPE);
                     $('#trailing-pe').text(response.financials.trailingPE);
@@ -429,6 +459,7 @@
                     $('#price-to-sales').text(response.financials.priceToSales);
                     $('#total-revenue').text(response.financials.totalRevenue);
                     $('#market-cap').text(response.financials.marketCap);
+
                     $('#future-value').text(response.priceTarget.futureValue || 'N/A');
                     $('#rate-increase').text(response.priceTarget.rateIncrease || 'N/A');
                     if (response.priceTarget.adjustments) {
@@ -436,6 +467,7 @@
                     } else {
                         $('#adjustment-note').hide();
                     }
+
                     $('#stats-container').show();
                     $('#price-target-container').show();
                     initUserProjections(response);
@@ -446,38 +478,46 @@
                 }
             });
         }
+
         // User projection sliders
         function calculateUserProjection() {
             const userRevenueGrowth = parseFloat($('#user-revenue-growth').val()) / 100;
             const userProfitMargin = parseFloat($('#user-profit-margin').val()) / 100;
             const userPE = parseFloat($('#user-pe-ratio').val());
+
             $('#user-revenue-growth-value').text(Math.round(userRevenueGrowth * 100) + '%');
             $('#user-profit-margin-value').text(Math.round(userProfitMargin * 100) + '%');
             $('#user-pe-ratio-value').text(userPE.toFixed(0));
+
             const revenueText = $('#total-revenue').text();
             const marketCapText = $('#market-cap').text();
+
             if (revenueText === 'N/A' || marketCapText === 'N/A') {
                 $('#user-future-value').text('N/A');
                 $('#user-rate-increase').text('N/A');
                 return;
             }
+
             let revenue = 0;
             let marketCap = 0;
             try {
-                revenue = parseFloat(revenueText.replace(', '').replace('B', '')) * 1e9;
-                marketCap = parseFloat(marketCapText.replace(', '').replace('B', '')) * 1e9;
+                revenue = parseFloat(revenueText.replace('$', '').replace('B', '')) * 1e9;
+                marketCap = parseFloat(marketCapText.replace('$', '').replace('B', '')) * 1e9;
             } catch (err) {
                 console.error('Error parsing revenue/marketcap:', err);
                 $('#user-future-value').text('Error');
                 $('#user-rate-increase').text('Error');
                 return;
             }
+
             const futureValue = revenue * Math.pow((1 + userRevenueGrowth), 5) * userProfitMargin * userPE;
             const futureValueBillion = (futureValue / 1e9).toFixed(2);
             const rateIncrease = (futureValue / marketCap).toFixed(2);
+
             $('#user-future-value').text('$' + futureValueBillion + 'B');
             $('#user-rate-increase').text(rateIncrease + 'x');
         }
+
         // Called after we fetch new data
         function initUserProjections(response) {
             if (response.financials.revenueGrowth !== 'N/A') {
@@ -494,6 +534,7 @@
             }
             calculateUserProjection();
         }
+
         // Recalculate on slider input
         $('#user-revenue-growth, #user-profit-margin, #user-pe-ratio').on('input', calculateUserProjection);
     </script>
