@@ -59,8 +59,6 @@ def get_yfinance_data(symbol):
         time.sleep(random.uniform(1, 3))  # Slight random delay
         stock = yf.Ticker(symbol)
         info = stock.info
-        print("DEBUG: YFinance info =", info)
-
         data = {
             'totalRevenue': info.get('totalRevenue', None),
             'revenueGrowth': info.get('revenueGrowth', None),
